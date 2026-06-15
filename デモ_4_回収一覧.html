@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!--
+  reus 買い付け金額 回収システム ─ ④回収状況：案件一覧（親ダッシュボード）（デモ）
+  ※ レウス担当者用。案件をコンパクトに一覧表示し、検索・絞り込みで見やすさを担保（ハリボテ）。
+  ※ データが増えても破綻しないことを示すための画面。数値はサンプルです。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>④ 回収状況・案件一覧（デモ）｜reus</title>
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-2:#2f5688; --accent:#c8a14a;
+    --bg:#eef1f5; --line:#dfe4ea; --text:#1f2733; --muted:#6b7280; --ok:#1f8a5b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding-bottom:40px;}
+
+  .demo-nav{position:sticky;top:0;z-index:40;background:#0f2238;color:#cdd8e6;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 14px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .demo-nav .dn-label{font-weight:700;color:#e8c877;margin-right:8px;letter-spacing:.05em;}
+  .demo-nav a{color:#cdd8e6;text-decoration:none;padding:5px 11px;border-radius:999px;transition:.15s;}
+  .demo-nav a:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .demo-nav a.current{background:var(--accent);color:#fff;font-weight:700;}
+
+  header{background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;padding:22px 20px 26px;}
+  .head-inner{max-width:1000px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:14px;opacity:.95;}
+  .brand .mark{width:28px;height:28px;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+  .role{display:inline-block;margin-top:10px;font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;}
+  header h1{margin:10px 0 4px;font-size:23px;font-weight:700;}
+  header p{margin:0;font-size:13.5px;opacity:.9;}
+
+  main{max-width:1000px;margin:0 auto;padding:22px 16px;}
+  .demo-note{background:#fff7e6;border:1px solid #f0d68a;color:#8a6d1b;border-radius:10px;padding:11px 15px;font-size:13px;margin-bottom:20px;}
+
+  /* サマリー */
+  .summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+  .stat{flex:1;min-width:140px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 2px 10px rgba(30,58,95,.05);}
+  .stat .label{font-size:12px;color:var(--muted);}
+  .stat .val{font-size:24px;font-weight:800;color:var(--navy);}
+  .stat .val small{font-size:13px;font-weight:700;color:var(--muted);}
+  .stat.hi .val{color:var(--ok);}
+
+  /* ツールバー */
+  .toolbar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:18px;box-shadow:0 2px 10px rgba(30,58,95,.05);}
+  .search-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .search-box{flex:1;min-width:240px;position:relative;}
+  .search-box input{width:100%;padding:11px 13px 11px 38px;border:1.5px solid var(--line);border-radius:9px;font-size:14.5px;font-family:inherit;background:#fbfcfd;}
+  .search-box input:focus{outline:none;border-color:var(--navy-2);background:#fff;box-shadow:0 0 0 3px rgba(47,86,136,.12);}
+  .search-box .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;}
+  .new-btn{background:var(--accent);color:#fff;text-decoration:none;border-radius:9px;padding:11px 18px;font-size:14px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(200,161,74,.35);transition:.15s;}
+  .new-btn:hover{filter:brightness(1.05);transform:translateY(-1px);}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .chip{border:1.5px solid var(--line);background:#fff;color:#56657a;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+  .chip:hover{border-color:var(--navy-2);}
+  .chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .sortwrap{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);}
+  .sortwrap select{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;background:#fff;}
+
+  /* 案件リスト（テーブル） */
+  .list{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(30,58,95,.05);overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{background:#eef2f7;color:#56657a;font-size:12px;font-weight:700;text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  thead th.c{text-align:center;}
+  tbody td{padding:13px 14px;border-bottom:1px solid #eef1f5;vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.row:hover{background:#f7faff;}
+  .case-name{font-weight:700;color:var(--navy);font-size:14.5px;}
+  .badge-new{display:inline-block;background:#fdecea;color:#c0392b;font-size:10.5px;font-weight:800;border-radius:5px;padding:2px 7px;margin-left:8px;vertical-align:middle;}
+  .c{text-align:center;}
+  .num{font-weight:700;color:var(--navy);}
+  .muted{color:var(--muted);font-size:12.5px;white-space:nowrap;}
+  .st{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:4px 11px;white-space:nowrap;}
+  .st.open{background:#eafaf1;color:var(--ok);border:1px solid #b8e6cd;}
+  .st.closed{background:#eef0f3;color:#8a93a0;border:1px solid #dfe3e9;}
+  .open-btn{display:inline-block;text-decoration:none;border:1.5px solid var(--navy);color:var(--navy);background:#fff;border-radius:8px;padding:7px 15px;font-size:13px;font-weight:700;transition:.15s;white-space:nowrap;}
+  .open-btn:hover{background:var(--navy);color:#fff;}
+  .no-result{display:none;padding:26px;text-align:center;color:var(--muted);font-size:13.5px;}
+
+  .hint-box{margin-top:18px;background:#f4f7fb;border:1px solid #dde6f1;border-radius:11px;padding:14px 16px;font-size:13px;color:#3a4a60;}
+  .hint-box b{color:var(--navy);}
+
+  .nav-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px;}
+  .btn-line{display:inline-block;text-decoration:none;border:1.5px solid var(--navy);color:var(--navy);background:#fff;border-radius:10px;padding:12px 22px;font-size:14.5px;font-weight:700;transition:.15s;}
+  .btn-line:hover{background:var(--navy);color:#fff;}
+
+  @media(max-width:720px){
+    header h1{font-size:20px;}
+    thead th:nth-child(2),tbody td:nth-child(2){display:none;} /* 送信日 */
+    thead th:nth-child(6),tbody td:nth-child(6){display:none;} /* 最終回答 */
+  }
+</style>
+</head>
+<body>
+
+<nav class="demo-nav">
+  <span class="dn-label">🧪 操作デモ</span>
+  <a href="デモ_0_全体像トップ.html">全体像</a>
+  <a href="デモ_1_アップロード.html">①アップロード</a>
+  <a href="デモ_2_送信準備.html">②送信準備</a>
+  <a href="買い付け金額回収フォーム_デモ.html">③回収フォーム</a>
+  <a class="current" href="デモ_4_回収一覧.html">④回収状況</a>
+</nav>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><span class="mark">R</span>REUS</div>
+    <span class="role">🔒 レウス担当者用 管理画面</span>
+    <h1>④ 回収状況（案件一覧）</h1>
+    <p>送信した案件を一覧で管理。案件が増えても、検索・絞り込みで必要なものだけサッと開けます。</p>
+  </div>
+</header>
+
+<main>
+  <div class="demo-note">
+    🧪 これは<strong>画面イメージのデモ</strong>です。<strong>検索ボックス・絞り込みボタンは実際に動きます</strong>（試してみてください）。一番上の案件「開く」を押すと詳細画面に進みます。
+  </div>
+
+  <!-- サマリー -->
+  <div class="summary">
+    <div class="stat"><div class="label">受付中の案件</div><div class="val">5 <small>件</small></div></div>
+    <div class="stat hi"><div class="label">新着の回答</div><div class="val">3 <small>件</small></div></div>
+    <div class="stat"><div class="label">今月の送信案件</div><div class="val">5 <small>件</small></div></div>
+    <div class="stat"><div class="label">累計の案件</div><div class="val">8 <small>件</small></div></div>
+  </div>
+
+  <!-- ツールバー -->
+  <div class="toolbar">
+    <div class="search-row">
+      <div class="search-box">
+        <span class="ico">🔎</span>
+        <input type="text" id="search" placeholder="案件名・物件名・業者名で検索（例：大阪、区分、みらい）" oninput="applyFilter()">
+      </div>
+      <a class="new-btn" href="デモ_1_アップロード.html">＋ 新しい案件を作る</a>
+    </div>
+    <div class="chips">
+      <div class="chip active" data-filter="all" onclick="setFilter(this)">すべて</div>
+      <div class="chip" data-filter="open" onclick="setFilter(this)">受付中</div>
+      <div class="chip" data-filter="closed" onclick="setFilter(this)">受付終了</div>
+      <div class="chip" data-filter="new" onclick="setFilter(this)">🔴 新着あり</div>
+      <div class="sortwrap">並べ替え：
+        <select id="sort" onchange="applyFilter()">
+          <option value="new">新しい順</option>
+          <option value="ans">回答が多い順</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 案件リスト -->
+  <div class="list">
+    <table>
+      <thead>
+        <tr>
+          <th>案件名</th>
+          <th>送信日</th>
+          <th class="c">物件数</th>
+          <th class="c">回答</th>
+          <th class="c">状態</th>
+          <th>最終回答</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr class="row" data-status="open" data-new="1" data-date="20260613" data-ans="9" data-text="2026年6月 大阪市内 収益区分3件 プレサンス谷町九丁目 ジオ江坂 ファステート難波 関西エステート サンライズ住販 みらいリアルティ なにわ不動産">
+          <td><span class="case-name">2026年6月 大阪市内 収益区分3件</span><span class="badge-new">新着</span></td>
+          <td class="muted">6/13</td>
+          <td class="c"><span class="num">3</span></td>
+          <td class="c"><span class="num">9</span> <span class="muted">件 / 5社</span></td>
+          <td class="c"><span class="st open">受付中</span></td>
+          <td class="muted">6/15 11:30</td>
+          <td><a class="open-btn" href="デモ_4_回収状況管理.html">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="open" data-new="1" data-date="20260611" data-ans="18" data-text="2026年6月 京都 区分5件">
+          <td><span class="case-name">2026年6月 京都市内 区分5件</span><span class="badge-new">新着</span></td>
+          <td class="muted">6/11</td>
+          <td class="c"><span class="num">5</span></td>
+          <td class="c"><span class="num">18</span> <span class="muted">件 / 7社</span></td>
+          <td class="c"><span class="st open">受付中</span></td>
+          <td class="muted">6/15 09:48</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="open" data-new="1" data-date="20260611" data-ans="3" data-text="2026年6月 西宮 一棟アパート1件">
+          <td><span class="case-name">2026年6月 西宮 一棟アパート1件</span><span class="badge-new">新着</span></td>
+          <td class="muted">6/11</td>
+          <td class="c"><span class="num">1</span></td>
+          <td class="c"><span class="num">3</span> <span class="muted">件 / 3社</span></td>
+          <td class="c"><span class="st open">受付中</span></td>
+          <td class="muted">6/14 16:02</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="open" data-new="0" data-date="20260606" data-ans="14" data-text="2026年6月 大阪 タワマン高層階4件">
+          <td><span class="case-name">2026年6月 大阪 タワマン高層階4件</span></td>
+          <td class="muted">6/6</td>
+          <td class="c"><span class="num">4</span></td>
+          <td class="c"><span class="num">14</span> <span class="muted">件 / 6社</span></td>
+          <td class="c"><span class="st open">受付中</span></td>
+          <td class="muted">6/11 13:20</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="open" data-new="0" data-date="20260612" data-ans="4" data-text="2026年6月 神戸 一棟マンション2件">
+          <td><span class="case-name">2026年6月 神戸 一棟マンション2件</span></td>
+          <td class="muted">6/12</td>
+          <td class="c"><span class="num">2</span></td>
+          <td class="c"><span class="num">4</span> <span class="muted">件 / 3社</span></td>
+          <td class="c"><span class="st open">受付中</span></td>
+          <td class="muted">6/14 10:15</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="closed" data-new="0" data-date="20260528" data-ans="31" data-text="2026年5月 大阪 区分ワンルーム8件">
+          <td><span class="case-name">2026年5月 大阪 区分ワンルーム8件</span></td>
+          <td class="muted">5/28</td>
+          <td class="c"><span class="num">8</span></td>
+          <td class="c"><span class="num">31</span> <span class="muted">件 / 9社</span></td>
+          <td class="c"><span class="st closed">受付終了</span></td>
+          <td class="muted">6/2 17:40</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="closed" data-new="0" data-date="20260520" data-ans="3" data-text="2026年5月 堺市 戸建2件">
+          <td><span class="case-name">2026年5月 堺市 戸建2件</span></td>
+          <td class="muted">5/20</td>
+          <td class="c"><span class="num">2</span></td>
+          <td class="c"><span class="num">3</span> <span class="muted">件 / 2社</span></td>
+          <td class="c"><span class="st closed">受付終了</span></td>
+          <td class="muted">5/25 12:05</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+        <tr class="row" data-status="closed" data-new="0" data-date="20260515" data-ans="8" data-text="2026年5月 奈良 区分3件">
+          <td><span class="case-name">2026年5月 奈良市内 区分3件</span></td>
+          <td class="muted">5/15</td>
+          <td class="c"><span class="num">3</span></td>
+          <td class="c"><span class="num">8</span> <span class="muted">件 / 4社</span></td>
+          <td class="c"><span class="st closed">受付終了</span></td>
+          <td class="muted">5/22 14:30</td>
+          <td><a class="open-btn" href="#" onclick="demoOnly(event)">開く ➜</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="no-result" id="noResult">条件に合う案件がありません。検索ワードや絞り込みを変えてみてください。</div>
+  </div>
+
+  <div class="hint-box">
+    💡 <b>ここがポイント：</b>案件が何百件に増えても、普段はこの一覧だけ見て、<b>検索・絞り込みで必要な案件だけを開く</b>運用にできます。今のスプレッドシートのように全行をスクロールして探す必要がなくなります。
+  </div>
+
+  <div class="nav-row">
+    <a class="btn-line" href="買い付け金額回収フォーム_デモ.html">⬅ ③回収フォームに戻る</a>
+    <a class="btn-line" href="デモ_0_全体像トップ.html">🏠 全体像トップへ</a>
+  </div>
+</main>
+
+<script>
+  var currentFilter = 'all';
+
+  // 絞り込みチップの切り替え
+  function setFilter(el){
+    document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
+    el.classList.add('active');
+    currentFilter = el.dataset.filter;
+    applyFilter();
+  }
+
+  // 検索＋絞り込み＋並べ替えをまとめて適用
+  function applyFilter(){
+    var keyword = document.getElementById('search').value.trim().toLowerCase();
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#rows .row'));
+    var visibleCount = 0;
+
+    rows.forEach(function(row){
+      var text = (row.dataset.text || '').toLowerCase();
+      var status = row.dataset.status;
+      var isNew = row.dataset.new === '1';
+
+      // 絞り込み条件
+      var passFilter =
+        currentFilter === 'all' ? true :
+        currentFilter === 'open' ? status === 'open' :
+        currentFilter === 'closed' ? status === 'closed' :
+        currentFilter === 'new' ? isNew : true;
+
+      // 検索条件
+      var passSearch = keyword === '' || text.indexOf(keyword) !== -1;
+
+      var show = passFilter && passSearch;
+      row.style.display = show ? '' : 'none';
+      if(show) visibleCount++;
+    });
+
+    // 並べ替え（表示中の行を並べ替えて入れ直す）
+    var sortKey = document.getElementById('sort').value;
+    var tbody = document.getElementById('rows');
+    rows.sort(function(a,b){
+      if(sortKey === 'ans') return Number(b.dataset.ans) - Number(a.dataset.ans);
+      return Number(b.dataset.date) - Number(a.dataset.date); // 新しい順
+    }).forEach(function(row){ tbody.appendChild(row); });
+
+    document.getElementById('noResult').style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+
+  // デモでは詳細を省略している案件
+  function demoOnly(e){
+    e.preventDefault();
+    alert('【デモ】この案件の詳細画面は省略しています。\n一番上の「2026年6月 大阪市内 収益区分3件」を開くと、詳細画面（物件ごとのランキング）が見られます。');
+  }
+</script>
+</body>
+</html>

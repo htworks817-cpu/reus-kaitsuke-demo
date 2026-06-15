@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<!--
+  reus 買い付け金額 回収システム ─ ④回収状況 管理画面（デモ）
+  ※ レウス担当者用。誰がいくら提示したかを一覧で確認・受付を手動で締める（ハリボテ）。
+  ※ 数値はデモ用のサンプルです。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>④ 回収状況（デモ）｜reus</title>
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-2:#2f5688; --accent:#c8a14a;
+    --bg:#eef1f5; --line:#dfe4ea; --text:#1f2733; --muted:#6b7280; --ok:#1f8a5b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding-bottom:40px;}
+
+  .demo-nav{position:sticky;top:0;z-index:40;background:#0f2238;color:#cdd8e6;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 14px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .demo-nav .dn-label{font-weight:700;color:#e8c877;margin-right:8px;letter-spacing:.05em;}
+  .demo-nav a{color:#cdd8e6;text-decoration:none;padding:5px 11px;border-radius:999px;transition:.15s;}
+  .demo-nav a:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .demo-nav a.current{background:var(--accent);color:#fff;font-weight:700;}
+
+  header{background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;padding:22px 20px 26px;}
+  .head-inner{max-width:980px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:14px;opacity:.95;}
+  .brand .mark{width:28px;height:28px;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+  .role{display:inline-block;margin-top:10px;font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;}
+  header h1{margin:10px 0 4px;font-size:23px;font-weight:700;}
+  header p{margin:0;font-size:13.5px;opacity:.9;}
+
+  main{max-width:980px;margin:0 auto;padding:22px 16px;}
+  .demo-note{background:#fff7e6;border:1px solid #f0d68a;color:#8a6d1b;border-radius:10px;padding:11px 15px;font-size:13px;margin-bottom:20px;}
+
+  /* 案件ヘッダー行 */
+  .case-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .case-bar .title{font-size:17px;font-weight:700;color:var(--navy);}
+  .case-bar .sub{font-size:12.5px;color:var(--muted);}
+  .sheet-link{font-size:12.5px;color:var(--ok);background:#eafaf1;border:1px solid #b8e6cd;border-radius:999px;padding:5px 13px;font-weight:700;}
+
+  /* サマリー */
+  .summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+  .stat{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 2px 10px rgba(30,58,95,.05);}
+  .stat .label{font-size:12.5px;color:var(--muted);}
+  .stat .val{font-size:26px;font-weight:800;color:var(--navy);}
+  .stat .val small{font-size:14px;font-weight:700;color:var(--muted);}
+  .stat.hi .val{color:var(--ok);}
+
+  .sec-title{font-size:15px;font-weight:700;color:var(--navy);margin:8px 0 12px;display:flex;align-items:center;gap:9px;}
+  .sec-title::before{content:"";width:5px;height:18px;background:var(--accent);border-radius:3px;}
+
+  /* 物件カード（ランキング） */
+  .prop{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(30,58,95,.05);margin-bottom:18px;overflow:hidden;}
+  .prop-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);background:#f8fafc;}
+  .prop-head .name{font-size:15.5px;font-weight:700;}
+  .prop-head .name .no{color:var(--muted);font-weight:600;font-size:13px;margin-right:6px;}
+  .prop-head .count{font-size:12.5px;color:var(--muted);}
+  .prop-head .count b{color:var(--navy);font-size:15px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{background:#eef2f7;color:#56657a;font-size:12px;font-weight:700;text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);}
+  tbody td{padding:11px 14px;border-bottom:1px solid #eef1f5;}
+  tbody tr:last-child td{border-bottom:none;}
+  .rank{font-weight:800;width:46px;}
+  .rank .medal{font-size:16px;}
+  tr.top{background:#fffbe9;}
+  tr.top td{font-weight:700;}
+  .price{font-weight:800;color:var(--navy);font-size:15px;text-align:right;white-space:nowrap;}
+  tr.top .price{color:#9a7a23;}
+  .yield{color:var(--ok);font-weight:700;white-space:nowrap;}
+  .passed{color:#b6bcc6;}
+  .when{color:var(--muted);font-size:12px;white-space:nowrap;}
+
+  .empty{padding:16px 18px;color:var(--muted);font-size:13px;}
+
+  /* 締めるバー */
+  .close-bar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(30,58,95,.05);margin-top:8px;}
+  .close-bar .txt{font-size:13.5px;color:#3a4a60;}
+  .close-bar .txt b{color:var(--navy);}
+  .btn-close{background:#c0392b;color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s;}
+  .btn-close:hover{filter:brightness(1.05);}
+  .status-open{font-size:12.5px;font-weight:700;color:#1f8a5b;background:#eafaf1;border:1px solid #b8e6cd;border-radius:999px;padding:5px 13px;}
+
+  .nav-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px;}
+  .btn-line{display:inline-block;text-decoration:none;border:1.5px solid var(--navy);color:var(--navy);background:#fff;border-radius:10px;padding:12px 22px;font-size:14.5px;font-weight:700;transition:.15s;}
+  .btn-line:hover{background:var(--navy);color:#fff;}
+
+  @media(max-width:620px){
+    header h1{font-size:20px;}
+    .when{display:none;}
+    thead th:nth-child(5),tbody td:nth-child(5){display:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="demo-nav">
+  <span class="dn-label">🧪 操作デモ</span>
+  <a href="デモ_0_全体像トップ.html">全体像</a>
+  <a href="デモ_1_アップロード.html">①アップロード</a>
+  <a href="デモ_2_送信準備.html">②送信準備</a>
+  <a href="買い付け金額回収フォーム_デモ.html">③回収フォーム</a>
+  <a class="current" href="デモ_4_回収一覧.html">④回収状況</a>
+</nav>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><span class="mark">R</span>REUS</div>
+    <span class="role">🔒 レウス担当者用 管理画面</span>
+    <h1>④ 回収状況</h1>
+    <p>エンドから届いた買い付け金額を、物件ごとに高い順で一覧表示します。回答はスプレッドシートにも自動で集約されます。</p>
+  </div>
+</header>
+
+<main>
+  <div class="demo-note">
+    🧪 これは<strong>画面イメージのデモ</strong>です。表示している業者名・金額はサンプルです。「受付を締める」ボタンはデモ用メッセージが出るだけです。
+  </div>
+
+  <a href="デモ_4_回収一覧.html" style="display:inline-block;margin-bottom:14px;color:var(--navy-2);text-decoration:none;font-size:13px;font-weight:700;">⬅ 案件一覧に戻る</a>
+
+  <div class="case-bar">
+    <div>
+      <div class="title">2026年6月 大阪市内 収益区分3件</div>
+      <div class="sub">回答期限の目安：2026年6月20日（金）｜ フォーム発行：RE-2026-0613-ab12cd</div>
+    </div>
+    <span class="sheet-link">🟢 Googleスプレッドシートに自動連携中</span>
+  </div>
+
+  <!-- サマリー -->
+  <div class="summary">
+    <div class="stat"><div class="label">送信物件</div><div class="val">3 <small>件</small></div></div>
+    <div class="stat"><div class="label">回答した業者</div><div class="val">5 <small>社</small></div></div>
+    <div class="stat hi"><div class="label">金額の提示数</div><div class="val">9 <small>件</small></div></div>
+    <div class="stat"><div class="label">受付状態</div><div class="val" style="font-size:18px;color:#1f8a5b;">受付中</div></div>
+  </div>
+
+  <div class="sec-title">物件ごとの提示金額（高い順）</div>
+
+  <!-- 物件① -->
+  <div class="prop">
+    <div class="prop-head">
+      <div class="name"><span class="no">①</span>プレサンス谷町九丁目駅前</div>
+      <div class="count">提示 <b>4</b> 件</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th class="rank">順位</th><th>業者名 / 担当者</th><th style="text-align:right;">買い付け金額</th><th>表面利回り</th><th>提示日時</th></tr>
+      </thead>
+      <tbody>
+        <tr class="top">
+          <td class="rank"><span class="medal">🥇</span></td>
+          <td>関西エステート／田中</td>
+          <td class="price">1,780 万円</td>
+          <td class="yield">5.39%</td>
+          <td class="when">6/14 10:22</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td>株式会社サンライズ住販／佐藤</td>
+          <td class="price">1,760 万円</td>
+          <td class="yield">5.45%</td>
+          <td class="when">6/13 18:40</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td>みらいリアルティ／鈴木</td>
+          <td class="price">1,700 万円</td>
+          <td class="yield">5.64%</td>
+          <td class="when">6/14 09:05</td>
+        </tr>
+        <tr>
+          <td class="rank">4</td>
+          <td>なにわ不動産／高橋</td>
+          <td class="price">1,650 万円</td>
+          <td class="yield">5.81%</td>
+          <td class="when">6/15 11:30</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 物件② -->
+  <div class="prop">
+    <div class="prop-head">
+      <div class="name"><span class="no">②</span>ジオ江坂レジデンス</div>
+      <div class="count">提示 <b>3</b> 件</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th class="rank">順位</th><th>業者名 / 担当者</th><th style="text-align:right;">買い付け金額</th><th>表面利回り</th><th>提示日時</th></tr>
+      </thead>
+      <tbody>
+        <tr class="top">
+          <td class="rank"><span class="medal">🥇</span></td>
+          <td>株式会社サンライズ住販／佐藤</td>
+          <td class="price">2,250 万円</td>
+          <td class="yield">5.07%</td>
+          <td class="when">6/13 18:41</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td>コスモ住宅販売／伊藤</td>
+          <td class="price">2,200 万円</td>
+          <td class="yield">5.18%</td>
+          <td class="when">6/14 14:12</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td>関西エステート／田中</td>
+          <td class="price">2,180 万円</td>
+          <td class="yield">5.23%</td>
+          <td class="when">6/14 10:25</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 物件③ -->
+  <div class="prop">
+    <div class="prop-head">
+      <div class="name"><span class="no">③</span>ファステート難波SOUTH</div>
+      <div class="count">提示 <b>2</b> 件</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th class="rank">順位</th><th>業者名 / 担当者</th><th style="text-align:right;">買い付け金額</th><th>表面利回り</th><th>提示日時</th></tr>
+      </thead>
+      <tbody>
+        <tr class="top">
+          <td class="rank"><span class="medal">🥇</span></td>
+          <td>みらいリアルティ／鈴木</td>
+          <td class="price">1,520 万円</td>
+          <td class="yield">5.68%</td>
+          <td class="when">6/14 09:08</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td>なにわ不動産／高橋</td>
+          <td class="price">1,480 万円</td>
+          <td class="yield">5.84%</td>
+          <td class="when">6/15 11:33</td>
+        </tr>
+        <tr>
+          <td class="rank passed">―</td>
+          <td class="passed">コスモ住宅販売／伊藤（今回は見送り）</td>
+          <td class="price passed" style="color:#b6bcc6;">―</td>
+          <td class="passed">―</td>
+          <td class="when">6/14 14:15</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 締めるバー -->
+  <div class="close-bar">
+    <div class="txt">
+      <span class="status-open">受付中</span>
+      <b>受付を締める</b>と、エンドはこれ以上金額を入力・修正できなくなります。<br>
+      締めるタイミングはレウス担当者がいつでも選べます（自動の締め切りはありません）。
+    </div>
+    <button class="btn-close" onclick="alert('【デモ】受付を締めます。\n本番では、ここでフォームが入力不可になり、エンドには「受付終了」と表示されます。');">受付を締める</button>
+  </div>
+
+  <div class="nav-row">
+    <a class="btn-line" href="デモ_4_回収一覧.html">⬅ 案件一覧に戻る</a>
+    <a class="btn-line" href="デモ_0_全体像トップ.html">🏠 全体像トップへ</a>
+  </div>
+</main>
+
+</body>
+</html>

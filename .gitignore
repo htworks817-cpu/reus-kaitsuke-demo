@@ -1,0 +1,9 @@
+# Claude Code の内部ファイル（公開しない）
+.claude/
+
+# バックアップ・一時ファイル
+*.bak
+*.tmp
+
+# OS生成ファイル
+.DS_Store

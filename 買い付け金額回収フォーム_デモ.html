@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<!--
+  reus 買い付け金額 回収フォーム ─ 画面デモ（ハリボテ）
+  ※ 見た目のすり合わせ用。送信・保存は動きません（押すとデモ用メッセージが出るだけ）。
+  ※ 物件1は実マイソク、物件2・3はデモ用ダミーです。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>買い付け金額 回収フォーム（デモ）｜reus</title>
+<style>
+  /* ===== 配色（マイソクのreusネイビーに合わせる） ===== */
+  :root{
+    --navy:#1e3a5f;      /* メインの濃紺 */
+    --navy-2:#2f5688;    /* やや明るい紺 */
+    --accent:#c8a14a;    /* 差し色（ゴールド系・高級感） */
+    --bg:#eef1f5;        /* 背景 */
+    --line:#dfe4ea;      /* 罫線 */
+    --text:#1f2733;      /* 文字 */
+    --muted:#6b7280;     /* 補助文字 */
+    --ok:#1f8a5b;        /* 入力済みの緑 */
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+    padding-bottom:90px; /* 下部固定バーの分 */
+  }
+
+  /* ===== 操作デモ・ナビ（全画面共通） ===== */
+  .demo-nav{position:sticky;top:0;z-index:40;background:#0f2238;color:#cdd8e6;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 14px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .demo-nav .dn-label{font-weight:700;color:#e8c877;margin-right:8px;letter-spacing:.05em;}
+  .demo-nav a{color:#cdd8e6;text-decoration:none;padding:5px 11px;border-radius:999px;transition:.15s;}
+  .demo-nav a:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .demo-nav a.current{background:var(--accent);color:#fff;font-weight:700;}
+
+  /* ===== ヘッダー ===== */
+  header{
+    background:linear-gradient(135deg,var(--navy),var(--navy-2));
+    color:#fff;
+    padding:22px 20px 26px;
+  }
+  .head-inner{max-width:920px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:15px;opacity:.95;}
+  .brand .mark{
+    width:30px;height:30px;border:2px solid #fff;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;
+  }
+  header h1{margin:14px 0 4px;font-size:23px;font-weight:700;}
+  header p{margin:0;font-size:13.5px;opacity:.9;}
+  .deadline{
+    display:inline-block;margin-top:12px;background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.3);border-radius:999px;
+    padding:5px 14px;font-size:13px;
+  }
+
+  /* ===== 本体 ===== */
+  main{max-width:920px;margin:0 auto;padding:22px 16px;}
+  .demo-note{
+    background:#fff7e6;border:1px solid #f0d68a;color:#8a6d1b;
+    border-radius:10px;padding:11px 15px;font-size:13px;margin-bottom:20px;
+  }
+
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 2px 10px rgba(30,58,95,.05);
+    margin-bottom:20px;overflow:hidden;
+  }
+  /* 入力者情報カード */
+  .section-title{
+    background:var(--navy);color:#fff;font-size:14px;font-weight:700;
+    padding:11px 18px;letter-spacing:.04em;display:flex;align-items:center;gap:8px;
+  }
+  .section-title .num{
+    background:var(--accent);color:#fff;width:22px;height:22px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px;
+  }
+  .pad{padding:18px;}
+
+  /* 宛先（レウスが送信時に設定。エンドは入力不要） */
+  .addressee{display:flex;gap:14px;align-items:center;padding:16px 18px;}
+  .addressee .ad-ico{font-size:28px;flex-shrink:0;}
+  .addressee .ad-to{font-size:15.5px;}
+  .addressee .ad-to b{color:var(--navy);font-size:18px;}
+  .addressee .ad-note{font-size:12.5px;color:var(--muted);margin-top:3px;}
+
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;}
+  label .req{color:#c0392b;font-size:12px;margin-left:5px;}
+  input[type=text],input[type=email],input[type=tel],textarea{
+    width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;
+    font-size:15px;font-family:inherit;background:#fbfcfd;transition:.15s;
+  }
+  input:focus,textarea:focus{outline:none;border-color:var(--navy-2);background:#fff;box-shadow:0 0 0 3px rgba(47,86,136,.12);}
+  .two-col{display:flex;gap:14px;flex-wrap:wrap;}
+  .two-col .field{flex:1;min-width:220px;}
+
+  /* 物件カード */
+  .prop-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:13px 18px;border-bottom:1px solid var(--line);background:#f8fafc;
+  }
+  .prop-head .name{font-size:16px;font-weight:700;}
+  .prop-head .badge{font-size:12px;color:var(--muted);}
+  .dummy-badge{background:#fdecea;color:#b13a2c;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;}
+  /* サブリース区分バッジ */
+  .kind{border-radius:6px;padding:3px 10px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .kind.sub{background:#eef0ff;color:#3f49b0;border:1px solid #c9cdf0;}      /* サブリース */
+  .kind.shudai{background:#eafaf1;color:#1f8a5b;border:1px solid #b8e6cd;}   /* 集金代行（実賃料） */
+
+  .prop-body{display:flex;gap:18px;padding:18px;flex-wrap:wrap;}
+  .maisoku{flex:1.3;min-width:300px;}
+  .maisoku img{width:100%;border:1px solid var(--line);border-radius:8px;display:block;cursor:zoom-in;}
+  .maisoku .hint{font-size:12px;color:var(--muted);margin-top:6px;text-align:center;}
+
+  .offer{flex:1;min-width:260px;display:flex;flex-direction:column;}
+  .facts{font-size:13px;color:#374151;margin-bottom:14px;}
+  .facts div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line);}
+  .facts span:first-child{color:var(--muted);}
+
+  .offer-box{background:#f4f7fb;border:1px solid #dde6f1;border-radius:11px;padding:14px;margin-top:auto;}
+  .price-row{display:flex;align-items:center;gap:8px;}
+  .price-row input{
+    flex:1;font-size:20px;font-weight:700;text-align:right;color:var(--navy);
+    padding:10px 12px;border:1.5px solid #c3d2e6;border-radius:9px;background:#fff;
+  }
+  .price-row .unit{font-size:15px;font-weight:700;color:var(--muted);}
+  .yield{font-size:12.5px;color:var(--muted);margin-top:8px;min-height:18px;}
+  .yield b{color:var(--ok);font-size:14px;}
+  .yield .line{display:block;margin-bottom:2px;}
+  .yield .net b{color:#9a7a23;}
+  .pass-row{margin-top:10px;font-size:13px;display:flex;align-items:center;gap:7px;color:var(--muted);}
+  textarea{margin-top:10px;min-height:54px;resize:vertical;font-size:14px;}
+
+  /* 下部固定バー */
+  .bottom{
+    position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    box-shadow:0 -2px 12px rgba(0,0,0,.06);padding:12px 16px;
+  }
+  .bottom-inner{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .summary{font-size:13.5px;color:var(--muted);}
+  .summary b{color:var(--navy);font-size:16px;}
+  .submit{
+    background:var(--accent);color:#fff;border:none;border-radius:10px;
+    padding:13px 28px;font-size:15.5px;font-weight:700;cursor:pointer;letter-spacing:.04em;
+    box-shadow:0 2px 8px rgba(200,161,74,.4);transition:.15s;
+  }
+  .submit:hover{filter:brightness(1.05);transform:translateY(-1px);}
+
+  /* 拡大モーダル */
+  .modal{
+    display:none;position:fixed;inset:0;background:rgba(15,23,40,.85);z-index:50;
+    align-items:center;justify-content:center;padding:20px;cursor:zoom-out;
+  }
+  .modal img{max-width:100%;max-height:92vh;border-radius:8px;}
+
+  @media(max-width:560px){
+    header h1{font-size:20px;}
+    .prop-body{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="demo-nav">
+  <span class="dn-label">🧪 操作デモ</span>
+  <a href="デモ_0_全体像トップ.html">全体像</a>
+  <a href="デモ_1_アップロード.html">①アップロード</a>
+  <a href="デモ_2_送信準備.html">②送信準備</a>
+  <a class="current" href="買い付け金額回収フォーム_デモ.html">③回収フォーム</a>
+  <a href="デモ_4_回収一覧.html">④回収状況</a>
+</nav>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><span class="mark">R</span>REUS</div>
+    <h1>買い付け金額 回収フォーム</h1>
+    <p>下記の物件をご確認のうえ、ご希望の買い付け金額をご入力ください。メールへの返信は不要です。</p>
+    <span class="deadline">📅 回答期限：2026年6月20日（金）　※ 期限内なら何度でも修正できます</span>
+  </div>
+</header>
+
+<main>
+  <div class="demo-note">
+    🧪 これは<strong>画面イメージのデモ</strong>です。送信ボタンを押しても実際には送信・保存されません。物件②③はデモ用のダミーです。
+  </div>
+
+  <!-- 宛先（レウスが送信時に設定済み。エンドは会社名等の入力不要） -->
+  <div class="card">
+    <div class="addressee">
+      <div class="ad-ico">📩</div>
+      <div class="ad-body">
+        <div class="ad-to"><b>関西エステート</b>　田中 様 宛</div>
+        <div class="ad-note">このフォームはあなた専用です。会社名・ご担当者名の入力は不要です（この宛先で回答が記録されます）。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 物件一覧（金額入力欄つき） -->
+  <div class="section-title" style="border-radius:14px 14px 0 0;">物件ごとに買い付け金額をご入力ください</div>
+
+  <!-- 物件① 実マイソク -->
+  <div class="card" style="border-radius:0 0 14px 14px;">
+    <div class="prop-head">
+      <div class="name">① プレサンス谷町九丁目駅前 <span class="kind shudai">集金代行（実賃料）</span></div>
+      <div class="badge">物件番号：RE-2026-001</div>
+    </div>
+    <div class="prop-body">
+      <div class="maisoku">
+        <img src="images/maisoku-presance.png" alt="マイソク：プレサンス谷町九丁目駅前" onclick="zoom(this.src)">
+        <div class="hint">画像をクリックすると拡大できます</div>
+      </div>
+      <div class="offer">
+        <div class="facts">
+          <div><span>所在地</span><span>大阪市天王寺区生玉町</span></div>
+          <div><span>交通</span><span>Osaka Metro谷町線 谷町九丁目駅 徒歩2分</span></div>
+          <div><span>建物</span><span>RC造 15階建 15階／2020年2月築</span></div>
+          <div><span>専有面積／間取り</span><span>24.93㎡／1K</span></div>
+          <div><span>現況</span><span>賃貸中</span></div>
+          <div><span>家賃（月額）</span><span>80,000円</span></div>
+          <div><span>管理費（月額）</span><span>9,100円</span></div>
+          <div><span>修繕積立金（月額）</span><span>管理費に含む</span></div>
+        </div>
+        <div class="offer-box">
+          <label style="margin-bottom:8px;">買い付け希望金額</label>
+          <div class="price-row">
+            <input type="text" inputmode="numeric" class="price" data-rent="80000" data-cost="9100" placeholder="0">
+            <span class="unit">万円</span>
+          </div>
+          <div class="yield"></div>
+          <label class="pass-row"><input type="checkbox" class="pass">今回は見送る</label>
+          <textarea placeholder="条件・ご要望があればご記入ください（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 物件② ダミー -->
+  <div class="card">
+    <div class="prop-head">
+      <div class="name">② ジオ江坂レジデンス　<span class="kind sub">サブリース</span> <span class="dummy-badge">デモ用ダミー</span></div>
+      <div class="badge">物件番号：RE-2026-002</div>
+    </div>
+    <div class="prop-body">
+      <div class="maisoku">
+        <img src="images/maisoku-presance.png" alt="マイソク（ダミー）" onclick="zoom(this.src)">
+        <div class="hint">※ ダミー表示（本番では各物件のマイソク画像が入ります）</div>
+      </div>
+      <div class="offer">
+        <div class="facts">
+          <div><span>所在地</span><span>大阪府吹田市江坂町</span></div>
+          <div><span>交通</span><span>Osaka Metro御堂筋線 江坂駅 徒歩5分</span></div>
+          <div><span>建物</span><span>RC造 14階建 8階／2019年8月築</span></div>
+          <div><span>専有面積／間取り</span><span>28.50㎡／1K</span></div>
+          <div><span>現況</span><span>賃貸中（サブリース）</span></div>
+          <div><span>家賃（月額）</span><span>95,000円</span></div>
+          <div><span>管理費（月額）</span><span>8,500円</span></div>
+          <div><span>修繕積立金（月額）</span><span>6,200円</span></div>
+        </div>
+        <div class="offer-box">
+          <label style="margin-bottom:8px;">買い付け希望金額</label>
+          <div class="price-row">
+            <input type="text" inputmode="numeric" class="price" data-rent="95000" data-cost="14700" placeholder="0">
+            <span class="unit">万円</span>
+          </div>
+          <div class="yield"></div>
+          <label class="pass-row"><input type="checkbox" class="pass">今回は見送る</label>
+          <textarea placeholder="条件・ご要望があればご記入ください（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 物件③ ダミー -->
+  <div class="card">
+    <div class="prop-head">
+      <div class="name">③ ファステート難波SOUTH　<span class="kind shudai">集金代行（実賃料）</span> <span class="dummy-badge">デモ用ダミー</span></div>
+      <div class="badge">物件番号：RE-2026-003</div>
+    </div>
+    <div class="prop-body">
+      <div class="maisoku">
+        <img src="images/maisoku-presance.png" alt="マイソク（ダミー）" onclick="zoom(this.src)">
+        <div class="hint">※ ダミー表示（本番では各物件のマイソク画像が入ります）</div>
+      </div>
+      <div class="offer">
+        <div class="facts">
+          <div><span>所在地</span><span>大阪市浪速区幸町</span></div>
+          <div><span>交通</span><span>Osaka Metro四つ橋線 桜川駅 徒歩4分</span></div>
+          <div><span>建物</span><span>RC造 12階建 7階／2021年5月築</span></div>
+          <div><span>専有面積／間取り</span><span>21.80㎡／1K</span></div>
+          <div><span>現況</span><span>賃貸中</span></div>
+          <div><span>家賃（月額）</span><span>72,000円</span></div>
+          <div><span>管理費（月額）</span><span>7,100円</span></div>
+          <div><span>修繕積立金（月額）</span><span>5,900円</span></div>
+        </div>
+        <div class="offer-box">
+          <label style="margin-bottom:8px;">買い付け希望金額</label>
+          <div class="price-row">
+            <input type="text" inputmode="numeric" class="price" data-rent="72000" data-cost="13000" placeholder="0">
+            <span class="unit">万円</span>
+          </div>
+          <div class="yield"></div>
+          <label class="pass-row"><input type="checkbox" class="pass">今回は見送る</label>
+          <textarea placeholder="条件・ご要望があればご記入ください（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 下部固定バー -->
+<div class="bottom">
+  <div class="bottom-inner">
+    <div class="summary">入力済み物件：<b id="count">0</b> / 3 件</div>
+    <button class="submit" onclick="submitDemo()">買い付け金額を送信する</button>
+  </div>
+</div>
+
+<!-- 画像拡大モーダル -->
+<div class="modal" id="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
+
+<script>
+  // ===== 金額入力：3桁カンマ区切り＋表面利回りの自動計算 =====
+  document.querySelectorAll('.price').forEach(function(input){
+    input.addEventListener('input', function(){
+      // 数字以外を除去
+      var raw = input.value.replace(/[^0-9]/g,'');
+      // カンマ区切りで表示（万円単位）
+      input.value = raw ? Number(raw).toLocaleString() : '';
+      // 表面利回り＋実質利回り（管理費・修繕積立金を引いた概算）を計算して表示
+      var manen = Number(raw);                  // 入力＝万円
+      var rent  = Number(input.dataset.rent);   // 月額家賃（円）
+      var cost  = Number(input.dataset.cost || 0); // 月額の管理費＋修繕積立金（円）
+      var yieldBox = input.closest('.offer-box').querySelector('.yield');
+      if(manen > 0){
+        var price  = manen * 10000;             // 円に換算
+        var annual = rent * 12;                 // 年間家賃
+        var netAnnual = (rent - cost) * 12;     // 年間の手取り（家賃 − 管理費・修繕積立金）
+        var grossRate = (annual / price * 100).toFixed(2);     // 表面利回り
+        var netRate   = (netAnnual / price * 100).toFixed(2);  // 実質利回り（概算）
+        yieldBox.innerHTML =
+          '<span class="line">表面利回り：<b>' + grossRate + '％</b>（年間家賃 ' + annual.toLocaleString() + '円 ÷ 買付額）</span>' +
+          '<span class="line net">実質利回り（概算）：<b>' + netRate + '％</b>（管理費・修繕積立金を控除）</span>';
+      }else{
+        yieldBox.innerHTML = '';
+      }
+      updateCount();
+    });
+  });
+
+  // ===== 「見送る」チェックで入力欄を無効化 =====
+  document.querySelectorAll('.pass').forEach(function(chk){
+    chk.addEventListener('change', function(){
+      var box = chk.closest('.offer-box');
+      var price = box.querySelector('.price');
+      price.disabled = chk.checked;
+      price.style.opacity = chk.checked ? .4 : 1;
+      if(chk.checked){ price.value=''; box.querySelector('.yield').innerHTML=''; }
+      updateCount();
+    });
+  });
+
+  // ===== 入力済み件数のカウント =====
+  function updateCount(){
+    var n = 0;
+    document.querySelectorAll('.offer-box').forEach(function(box){
+      var price = box.querySelector('.price');
+      var pass  = box.querySelector('.pass');
+      if((price.value && !price.disabled) || pass.checked) n++;
+    });
+    document.getElementById('count').textContent = n;
+  }
+
+  // ===== 画像拡大 =====
+  function zoom(src){
+    document.getElementById('modalImg').src = src;
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  // ===== 送信（デモ：実際には送りません） =====
+  function submitDemo(){
+    // 宛先はレウスが送信時に設定済み（フォームでは入力不要）。本番では専用URLから自動で紐づく
+    var company = '関西エステート';
+    var person  = '田中';
+    var lines = [];
+    document.querySelectorAll('.card').forEach(function(card){
+      var nameEl = card.querySelector('.prop-head .name');
+      if(!nameEl) return;
+      var box = card.querySelector('.offer-box');
+      if(!box) return;
+      var name = nameEl.textContent.replace('デモ用ダミー','').trim();
+      var pass = box.querySelector('.pass').checked;
+      var price = box.querySelector('.price').value;
+      if(pass) lines.push('・' + name + '：見送り');
+      else if(price) lines.push('・' + name + '：' + price + '万円');
+    });
+    alert(
+      '【デモ送信】実際には送信されません。\n\n'
+      + '会社名：' + company + '\n担当者：' + person + '\n\n'
+      + (lines.length ? lines.join('\n') : '（金額が未入力です）')
+      + '\n\n本番ではこの内容がGoogleスプレッドシートに自動で記録されます。'
+    );
+  }
+</script>
+</body>
+</html>

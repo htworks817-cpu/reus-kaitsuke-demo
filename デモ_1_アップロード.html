@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<!--
+  reus 買い付け金額 回収システム ─ ①マイソク アップロード画面（デモ）
+  ※ レウス担当者用。実際の保存・アップロードは動きません（ハリボテ）。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>① マイソク アップロード（デモ）｜reus</title>
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-2:#2f5688; --accent:#c8a14a;
+    --bg:#eef1f5; --line:#dfe4ea; --text:#1f2733; --muted:#6b7280; --ok:#1f8a5b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;padding-bottom:90px;}
+
+  .demo-nav{position:sticky;top:0;z-index:40;background:#0f2238;color:#cdd8e6;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 14px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .demo-nav .dn-label{font-weight:700;color:#e8c877;margin-right:8px;letter-spacing:.05em;}
+  .demo-nav a{color:#cdd8e6;text-decoration:none;padding:5px 11px;border-radius:999px;transition:.15s;}
+  .demo-nav a:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .demo-nav a.current{background:var(--accent);color:#fff;font-weight:700;}
+
+  header{background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;padding:22px 20px 26px;}
+  .head-inner{max-width:920px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:14px;opacity:.95;}
+  .brand .mark{width:28px;height:28px;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+  .role{display:inline-block;margin-top:10px;font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;}
+  header h1{margin:10px 0 4px;font-size:23px;font-weight:700;}
+  header p{margin:0;font-size:13.5px;opacity:.9;}
+
+  main{max-width:920px;margin:0 auto;padding:22px 16px;}
+  .demo-note{background:#fff7e6;border:1px solid #f0d68a;color:#8a6d1b;border-radius:10px;padding:11px 15px;font-size:13px;margin-bottom:20px;}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(30,58,95,.05);margin-bottom:20px;overflow:hidden;}
+  .section-title{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:11px 18px;letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+  .section-title .num{background:var(--accent);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .pad{padding:18px;}
+
+  /* アップロードゾーン */
+  .dropzone{
+    border:2px dashed #b9c6d8;border-radius:12px;background:#f7faff;
+    padding:30px 20px;text-align:center;cursor:pointer;transition:.15s;
+  }
+  .dropzone:hover{background:#eef4ff;border-color:var(--navy-2);}
+  .dropzone .ico{font-size:38px;}
+  .dropzone .big{font-size:16px;font-weight:700;color:var(--navy);margin:8px 0 4px;}
+  .dropzone .sub{font-size:12.5px;color:var(--muted);}
+
+  /* アップロード済みリスト */
+  .uploaded{margin-top:18px;}
+  .uploaded h3{font-size:13.5px;color:var(--muted);margin:0 0 10px;font-weight:600;}
+  .file-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#fff;}
+  .file-row .pdf{width:42px;height:50px;border-radius:6px;background:#fdecea;color:#b13a2c;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;border:1px solid #f3c9c2;}
+  .file-row .info{flex:1;min-width:0;}
+  .file-row .fname{font-size:13px;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .file-row .info input{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;font-size:14.5px;font-family:inherit;background:#fbfcfd;}
+  .file-row .info input:focus{outline:none;border-color:var(--navy-2);background:#fff;box-shadow:0 0 0 3px rgba(47,86,136,.12);}
+  .file-row .del{background:none;border:none;color:#b6bcc6;font-size:20px;cursor:pointer;flex-shrink:0;}
+  .file-row .del:hover{color:#c0392b;}
+
+  .field{margin-bottom:14px;}
+  label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;}
+  label .opt{color:var(--muted);font-size:12px;font-weight:400;margin-left:5px;}
+  input[type=text],input[type=date]{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;font-size:15px;font-family:inherit;background:#fbfcfd;}
+  input:focus{outline:none;border-color:var(--navy-2);background:#fff;box-shadow:0 0 0 3px rgba(47,86,136,.12);}
+  .two-col{display:flex;gap:14px;flex-wrap:wrap;}
+  .two-col .field{flex:1;min-width:220px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;}
+
+  /* ===== 送信先（エンド業者）ピッカー ===== */
+  .picker-note{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
+  .picker-note b{color:var(--navy);}
+  .rcp-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+  .rcp-search{flex:1;min-width:200px;position:relative;}
+  .rcp-search span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+  .rcp-search input{width:100%;padding:10px 12px 10px 34px;border:1.5px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;background:#fbfcfd;}
+  .rcp-search input:focus{outline:none;border-color:var(--navy-2);background:#fff;box-shadow:0 0 0 3px rgba(47,86,136,.12);}
+  .rcp-all{background:#fff;border:1.5px solid var(--navy);color:var(--navy);border-radius:9px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .rcp-all:hover{background:var(--navy);color:#fff;}
+  .rcp-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
+  .rtab{border:1.5px solid var(--line);background:#fff;color:#56657a;border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;}
+  .rtab:hover{border-color:var(--navy-2);}
+  .rtab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .rcp-list{border:1px solid var(--line);border-radius:10px;max-height:280px;overflow-y:auto;}
+  .rcp-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #eef1f5;cursor:pointer;transition:.12s;}
+  .rcp-row:last-child{border-bottom:none;}
+  .rcp-row:hover{background:#f7faff;}
+  .rcp-chk{width:18px;height:18px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;}
+  .rcp-info{display:flex;flex-direction:column;}
+  .rcp-co{font-size:14px;font-weight:700;color:var(--navy);}
+  .rcp-co .fav{color:var(--accent);margin-left:5px;}
+  .rcp-meta{font-size:12px;color:var(--muted);}
+  .rcp-empty{display:none;padding:18px;text-align:center;color:var(--muted);font-size:13px;}
+  .rcp-foot{margin-top:10px;font-size:13px;color:#3a4a60;}
+  .rcp-foot b{color:var(--navy);font-size:15px;}
+
+  /* 宛先グループ（保存セットをワンクリック一括選択） */
+  .rcp-groups{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+  .rcp-groups .glabel{font-size:12px;color:var(--muted);font-weight:700;margin-right:2px;}
+  .gbtn{border:1.5px solid #c9d3e0;background:#fff;color:var(--navy);border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;}
+  .gbtn:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .gbtn.clear{color:#b13a2c;border-color:#e9c4bd;}
+  .gbtn.clear:hover{background:#b13a2c;color:#fff;border-color:#b13a2c;}
+
+  /* 選択済みトレイ（選んだ先を常時表示・×で外す） */
+  .rcp-tray{background:#f4f7fb;border:1px solid #dde6f1;border-radius:10px;padding:11px 13px;margin-bottom:14px;}
+  .rcp-tray .tray-head{font-size:12.5px;color:var(--navy);font-weight:700;margin-bottom:8px;}
+  .rcp-tray .tray-head b{font-size:15px;}
+  .rcp-tray .tray-body{display:flex;flex-wrap:wrap;gap:7px;max-height:118px;overflow-y:auto;}
+  .tray-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #c9d3e0;border-radius:999px;padding:5px 6px 5px 12px;font-size:12.5px;font-weight:600;color:var(--navy);}
+  .tray-chip button{border:none;background:#eef1f5;color:#6b7280;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
+  .tray-chip button:hover{background:#c0392b;color:#fff;}
+  .tray-empty{font-size:12.5px;color:var(--muted);}
+
+  .bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -2px 12px rgba(0,0,0,.06);padding:12px 16px;}
+  .bottom-inner{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .summary{font-size:13.5px;color:var(--muted);}
+  .summary b{color:var(--navy);font-size:16px;}
+  .submit{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px 28px;font-size:15.5px;font-weight:700;cursor:pointer;letter-spacing:.04em;box-shadow:0 2px 8px rgba(200,161,74,.4);transition:.15s;text-decoration:none;display:inline-block;}
+  .submit:hover{filter:brightness(1.05);transform:translateY(-1px);}
+
+  @media(max-width:560px){header h1{font-size:20px;}}
+</style>
+</head>
+<body>
+
+<nav class="demo-nav">
+  <span class="dn-label">🧪 操作デモ</span>
+  <a href="デモ_0_全体像トップ.html">全体像</a>
+  <a class="current" href="デモ_1_アップロード.html">①アップロード</a>
+  <a href="デモ_2_送信準備.html">②送信準備</a>
+  <a href="買い付け金額回収フォーム_デモ.html">③回収フォーム</a>
+  <a href="デモ_4_回収一覧.html">④回収状況</a>
+</nav>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><span class="mark">R</span>REUS</div>
+    <span class="role">🔒 レウス担当者用 管理画面</span>
+    <h1>① マイソクをアップロード</h1>
+    <p>エンドに送りたい自社マイソク（PDF）をまとめてアップロードし、物件名を入力してください。</p>
+  </div>
+</header>
+
+<main>
+  <div class="demo-note">
+    🧪 これは<strong>画面イメージのデモ</strong>です。実際のアップロードは行われません。下の「回収フォームを生成する」を押すと、②送信準備の画面に進みます。
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span class="num">1</span>マイソクPDFをアップロード</div>
+    <div class="pad">
+      <div class="dropzone" onclick="alert('デモのため、実際のファイル選択は動きません。\n本番では、ここにマイソクのPDFファイルをドラッグ＆ドロップ、またはクリックして選びます。');">
+        <div class="ico">📄⬆️</div>
+        <div class="big">ここにPDFをドラッグ＆ドロップ</div>
+        <div class="sub">または クリックしてファイルを選択（数件〜10件まとめてOK）</div>
+      </div>
+
+      <div class="uploaded">
+        <h3>アップロード済み：3件（物件名を確認・編集してください）</h3>
+
+        <div class="file-row">
+          <div class="pdf">PDF</div>
+          <div class="info">
+            <div class="fname">プレサンス谷町九丁目駅前15階（集代）.pdf</div>
+            <input type="text" value="プレサンス谷町九丁目駅前">
+          </div>
+          <button class="del" title="削除" onclick="alert('デモのため削除は動きません。');">×</button>
+        </div>
+
+        <div class="file-row">
+          <div class="pdf">PDF</div>
+          <div class="info">
+            <div class="fname">ジオ江坂レジデンス8階（集代）.pdf</div>
+            <input type="text" value="ジオ江坂レジデンス">
+          </div>
+          <button class="del" title="削除" onclick="alert('デモのため削除は動きません。');">×</button>
+        </div>
+
+        <div class="file-row">
+          <div class="pdf">PDF</div>
+          <div class="info">
+            <div class="fname">ファステート難波SOUTH12階（サブ）.pdf</div>
+            <input type="text" value="ファステート難波SOUTH">
+          </div>
+          <button class="del" title="削除" onclick="alert('デモのため削除は動きません。');">×</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span class="num">2</span>送信先（エンド業者）を選ぶ</div>
+    <div class="pad">
+      <p class="picker-note">登録済みの<b>エンド業者リスト（別スプレッドシートで管理）</b>から、今回フォームURLを送る先を選びます。<br>※ このデモのリストはサンプルです。本番ではレウスの業者リストが自動で表示されます。</p>
+
+      <!-- 宛先グループ：よく送るセットをワンクリックで一括選択（リストが増えても破綻しない） -->
+      <div class="rcp-groups">
+        <span class="glabel">宛先グループ：</span>
+        <button type="button" class="gbtn" onclick="rcpGroup('fav')">★優先メンバー</button>
+        <button type="button" class="gbtn" onclick="rcpGroup('osaka')">大阪をまとめて</button>
+        <button type="button" class="gbtn" onclick="rcpGroup('hyogo')">兵庫をまとめて</button>
+        <button type="button" class="gbtn" onclick="rcpGroup('all')">全選択</button>
+        <button type="button" class="gbtn clear" onclick="rcpGroup('clear')">全解除</button>
+      </div>
+
+      <!-- 選択済みトレイ：いま選んでいる送信先を常時表示・×で外せる -->
+      <div class="rcp-tray">
+        <div class="tray-head">選択中の送信先：<b id="rcpTrayCount">0</b> 社</div>
+        <div class="tray-body" id="rcpTray"></div>
+      </div>
+
+      <div class="rcp-toolbar">
+        <div class="rcp-search"><span>🔎</span><input type="text" id="rcpSearch" placeholder="会社名・担当者で検索" oninput="rcpFilter()"></div>
+        <button type="button" class="rcp-all" onclick="rcpSelectAllVisible()">表示中をすべて選択</button>
+      </div>
+
+      <div class="rcp-tabs">
+        <button type="button" class="rtab active" data-area="all" onclick="rcpTab(this)">すべて</button>
+        <button type="button" class="rtab" data-area="osaka" onclick="rcpTab(this)">大阪</button>
+        <button type="button" class="rtab" data-area="hyogo" onclick="rcpTab(this)">兵庫</button>
+        <button type="button" class="rtab" data-area="kyoto" onclick="rcpTab(this)">京都</button>
+        <button type="button" class="rtab" data-area="fav" onclick="rcpTab(this)">★優先</button>
+      </div>
+
+      <div class="rcp-list" id="rcpList">
+        <label class="rcp-row" data-area="osaka" data-fav="1" data-text="関西エステート 田中">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">関西エステート<span class="fav">★</span></span><span class="rcp-meta">担当：田中／大阪</span></div>
+        </label>
+        <label class="rcp-row" data-area="osaka" data-fav="1" data-text="みらいリアルティ 鈴木">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">みらいリアルティ<span class="fav">★</span></span><span class="rcp-meta">担当：鈴木／大阪</span></div>
+        </label>
+        <label class="rcp-row" data-area="osaka" data-fav="0" data-text="株式会社サンライズ住販 佐藤">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">株式会社サンライズ住販</span><span class="rcp-meta">担当：佐藤／大阪</span></div>
+        </label>
+        <label class="rcp-row" data-area="osaka" data-fav="0" data-text="なにわ不動産 高橋">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">なにわ不動産</span><span class="rcp-meta">担当：高橋／大阪</span></div>
+        </label>
+        <label class="rcp-row" data-area="osaka" data-fav="0" data-text="グランドエステート 吉田">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">グランドエステート</span><span class="rcp-meta">担当：吉田／大阪</span></div>
+        </label>
+        <label class="rcp-row" data-area="osaka" data-fav="0" data-text="アーバン投資販売 渡辺">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">アーバン投資販売</span><span class="rcp-meta">担当：渡辺／大阪</span></div>
+        </label>
+        <label class="rcp-row" data-area="hyogo" data-fav="1" data-text="コスモ住宅販売 伊藤">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">コスモ住宅販売<span class="fav">★</span></span><span class="rcp-meta">担当：伊藤／兵庫</span></div>
+        </label>
+        <label class="rcp-row" data-area="hyogo" data-fav="0" data-text="神戸プロパティ 山本">
+          <input type="checkbox" class="rcp-chk" checked onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">神戸プロパティ</span><span class="rcp-meta">担当：山本／兵庫</span></div>
+        </label>
+        <label class="rcp-row" data-area="hyogo" data-fav="0" data-text="阪神エージェント 小林">
+          <input type="checkbox" class="rcp-chk" onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">阪神エージェント</span><span class="rcp-meta">担当：小林／兵庫</span></div>
+        </label>
+        <label class="rcp-row" data-area="kyoto" data-fav="0" data-text="京都セントラル不動産 中村">
+          <input type="checkbox" class="rcp-chk" onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">京都セントラル不動産</span><span class="rcp-meta">担当：中村／京都</span></div>
+        </label>
+        <label class="rcp-row" data-area="kyoto" data-fav="0" data-text="洛中エステート 加藤">
+          <input type="checkbox" class="rcp-chk" onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">洛中エステート</span><span class="rcp-meta">担当：加藤／京都</span></div>
+        </label>
+        <label class="rcp-row" data-area="osaka" data-fav="0" data-text="西日本リアルエステート 山田">
+          <input type="checkbox" class="rcp-chk" onchange="rcpSync()">
+          <div class="rcp-info"><span class="rcp-co">西日本リアルエステート</span><span class="rcp-meta">担当：山田／大阪</span></div>
+        </label>
+      </div>
+      <div class="rcp-empty" id="rcpEmpty">条件に合う業者がいません。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span class="num">3</span>送信の設定</div>
+    <div class="pad">
+      <div class="field">
+        <label>案件名（社内管理用）<span class="opt">任意・回収状況の一覧で目印になります</span></label>
+        <input type="text" value="2026年6月 大阪市内 収益区分3件">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>回答期限の目安<span class="opt">任意・フォームに表示されます</span></label>
+          <input type="date" value="2026-06-20">
+          <div class="hint">※ 受付の締めは、回収状況の画面からいつでも手動でできます。</div>
+        </div>
+        <div class="field">
+          <label>件名（メール用）<span class="opt">後で編集できます</span></label>
+          <input type="text" value="【買い付け金額のお伺い】収益区分3件のご案内">
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="bottom">
+  <div class="bottom-inner">
+    <div class="summary">アップロード物件：<b>3</b> 件　／　送信先：<b id="rcpCount">8</b> 社</div>
+    <a class="submit" href="デモ_2_送信準備.html">回収フォームを生成する ➜</a>
+  </div>
+</div>
+
+<script>
+  var rcpCurrentArea = 'all';
+
+  // タブ切り替え（エリア絞り込み）
+  function rcpTab(btn){
+    document.querySelectorAll('.rtab').forEach(function(t){ t.classList.remove('active'); });
+    btn.classList.add('active');
+    rcpCurrentArea = btn.dataset.area;
+    rcpFilter();
+  }
+
+  // 検索＋タブをまとめて適用
+  function rcpFilter(){
+    var keyword = document.getElementById('rcpSearch').value.trim().toLowerCase();
+    var rows = document.querySelectorAll('#rcpList .rcp-row');
+    var shown = 0;
+    rows.forEach(function(row){
+      var matchArea =
+        rcpCurrentArea === 'all' ? true :
+        rcpCurrentArea === 'fav' ? row.dataset.fav === '1' :
+        row.dataset.area === rcpCurrentArea;
+      var matchText = keyword === '' || (row.dataset.text || '').toLowerCase().indexOf(keyword) !== -1;
+      var show = matchArea && matchText;
+      row.style.display = show ? '' : 'none';
+      if(show) shown++;
+    });
+    document.getElementById('rcpEmpty').style.display = shown === 0 ? 'block' : 'none';
+  }
+
+  // いま表示中の業者をすべて選択
+  function rcpSelectAllVisible(){
+    document.querySelectorAll('#rcpList .rcp-row').forEach(function(row){
+      if(row.style.display !== 'none'){
+        row.querySelector('.rcp-chk').checked = true;
+      }
+    });
+    rcpSync();
+  }
+
+  // 宛先グループ：よく送るセットをワンクリックで一括選択（リストが増えても破綻しない）
+  function rcpGroup(type){
+    document.querySelectorAll('#rcpList .rcp-row').forEach(function(row){
+      var chk = row.querySelector('.rcp-chk');
+      if(type === 'all')        chk.checked = true;            // 全選択
+      else if(type === 'clear') chk.checked = false;           // 全解除
+      else if(type === 'fav')   { if(row.dataset.fav === '1') chk.checked = true; }  // 優先メンバーを追加
+      else                      { if(row.dataset.area === type) chk.checked = true; } // エリアを追加
+    });
+    rcpSync();
+  }
+
+  // 選択中の社数を数えて表示（下部バー＋トレイ見出し）
+  function rcpCount(){
+    var n = document.querySelectorAll('#rcpList .rcp-chk:checked').length;
+    document.getElementById('rcpCount').textContent = n;
+    document.getElementById('rcpTrayCount').textContent = n;
+  }
+
+  // 選択済みトレイを描画（選んだ先をチップで常時表示・×で外せる）
+  function rcpRenderTray(){
+    var tray = document.getElementById('rcpTray');
+    tray.innerHTML = '';
+    var checked = document.querySelectorAll('#rcpList .rcp-chk:checked');
+    if(checked.length === 0){
+      tray.innerHTML = '<span class="tray-empty">まだ選択されていません。上のグループや下のリストから選んでください。</span>';
+      return;
+    }
+    checked.forEach(function(chk){
+      var row = chk.closest('.rcp-row');
+      var co  = row.querySelector('.rcp-co').textContent.replace('★','').trim();
+      var chip = document.createElement('span');
+      chip.className = 'tray-chip';
+      chip.textContent = co + ' ';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', co + ' を外す');
+      btn.textContent = '×';
+      btn.onclick = function(){ chk.checked = false; rcpSync(); };  // ×で選択解除
+      chip.appendChild(btn);
+      tray.appendChild(chip);
+    });
+  }
+
+  // 件数表示とトレイをまとめて更新
+  function rcpSync(){
+    rcpCount();
+    rcpRenderTray();
+  }
+
+  // 初期表示
+  rcpSync();
+</script>
+
+</body>
+</html>

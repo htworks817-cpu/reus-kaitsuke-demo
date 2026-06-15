@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!--
+  reus 買い付け金額 回収システム ─ ②送信準備画面（デモ）
+  ※ レウス担当者用。フォーム生成後、URLとメール文を受け取る画面（ハリボテ）。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>② 送信準備（デモ）｜reus</title>
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-2:#2f5688; --accent:#c8a14a;
+    --bg:#eef1f5; --line:#dfe4ea; --text:#1f2733; --muted:#6b7280; --ok:#1f8a5b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;padding-bottom:40px;}
+
+  .demo-nav{position:sticky;top:0;z-index:40;background:#0f2238;color:#cdd8e6;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 14px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .demo-nav .dn-label{font-weight:700;color:#e8c877;margin-right:8px;letter-spacing:.05em;}
+  .demo-nav a{color:#cdd8e6;text-decoration:none;padding:5px 11px;border-radius:999px;transition:.15s;}
+  .demo-nav a:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .demo-nav a.current{background:var(--accent);color:#fff;font-weight:700;}
+
+  header{background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;padding:22px 20px 26px;}
+  .head-inner{max-width:920px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:14px;opacity:.95;}
+  .brand .mark{width:28px;height:28px;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+  .role{display:inline-block;margin-top:10px;font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 12px;}
+  header h1{margin:10px 0 4px;font-size:23px;font-weight:700;}
+  header p{margin:0;font-size:13.5px;opacity:.9;}
+
+  main{max-width:920px;margin:0 auto;padding:22px 16px;}
+  .demo-note{background:#fff7e6;border:1px solid #f0d68a;color:#8a6d1b;border-radius:10px;padding:11px 15px;font-size:13px;margin-bottom:20px;}
+
+  .success{display:flex;align-items:center;gap:12px;background:#eafaf1;border:1px solid #b8e6cd;border-radius:12px;padding:16px 18px;margin-bottom:22px;}
+  .success .ico{font-size:30px;}
+  .success h2{margin:0 0 2px;font-size:17px;color:var(--ok);}
+  .success p{margin:0;font-size:13px;color:#3d6b54;}
+
+  /* 送信先チップ */
+  .rcp-lead{font-size:13px;color:#3a4a60;margin:0 0 12px;}
+  .rcp-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .rcp-chips .chip{background:#f4f7fb;border:1px solid #dde6f1;color:var(--navy);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;}
+  .rcp-chips .chip .pic{color:var(--muted);font-weight:400;margin-left:4px;}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(30,58,95,.05);margin-bottom:20px;overflow:hidden;}
+  .section-title{background:var(--navy);color:#fff;font-size:14px;font-weight:700;padding:11px 18px;letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+  .section-title .num{background:var(--accent);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .pad{padding:18px;}
+
+  .url-box{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .url-box .url{flex:1;min-width:240px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:var(--navy-2);background:#f4f7fb;border:1.5px solid #dde6f1;border-radius:9px;padding:12px 14px;word-break:break-all;}
+  .copy-btn{background:var(--navy);color:#fff;border:none;border-radius:9px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .copy-btn:hover{background:var(--navy-2);}
+  .copy-btn.done{background:var(--ok);}
+
+  .mailbox{position:relative;}
+  .mail-text{width:100%;min-height:230px;border:1.5px solid var(--line);border-radius:10px;background:#fbfcfd;padding:14px 16px;font-size:14px;font-family:inherit;line-height:1.8;color:var(--text);resize:vertical;white-space:pre-wrap;}
+  .mail-text:focus{outline:none;border-color:var(--navy-2);background:#fff;box-shadow:0 0 0 3px rgba(47,86,136,.12);}
+  .mail-actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;}
+
+  .how{background:#f4f7fb;border:1px solid #dde6f1;border-radius:11px;padding:14px 16px;font-size:13.5px;color:#3a4a60;}
+  .how b{color:var(--navy);}
+  .how ol{margin:8px 0 0;padding-left:20px;}
+  .how li{margin-bottom:5px;}
+
+  .future{margin-top:8px;font-size:12.5px;color:var(--muted);background:#f3f4f6;border:1px dashed #cfd4db;border-radius:8px;padding:9px 12px;}
+
+  .nav-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .btn-line{display:inline-block;text-decoration:none;border:1.5px solid var(--navy);color:var(--navy);background:#fff;border-radius:10px;padding:12px 22px;font-size:14.5px;font-weight:700;transition:.15s;}
+  .btn-line:hover{background:var(--navy);color:#fff;}
+  .btn-gold{display:inline-block;text-decoration:none;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14.5px;font-weight:700;box-shadow:0 2px 8px rgba(200,161,74,.4);transition:.15s;}
+  .btn-gold:hover{filter:brightness(1.05);transform:translateY(-1px);}
+
+  @media(max-width:560px){header h1{font-size:20px;}}
+</style>
+</head>
+<body>
+
+<nav class="demo-nav">
+  <span class="dn-label">🧪 操作デモ</span>
+  <a href="デモ_0_全体像トップ.html">全体像</a>
+  <a href="デモ_1_アップロード.html">①アップロード</a>
+  <a class="current" href="デモ_2_送信準備.html">②送信準備</a>
+  <a href="買い付け金額回収フォーム_デモ.html">③回収フォーム</a>
+  <a href="デモ_4_回収一覧.html">④回収状況</a>
+</nav>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><span class="mark">R</span>REUS</div>
+    <span class="role">🔒 レウス担当者用 管理画面</span>
+    <h1>② 送信準備</h1>
+    <p>回収フォームが生成されました。下のURLとメール文を、いつものメールに貼って送るだけです。</p>
+  </div>
+</header>
+
+<main>
+  <div class="demo-note">
+    🧪 これは<strong>画面イメージのデモ</strong>です。コピーボタンは動きますが、URLはサンプルです。
+  </div>
+
+  <div class="success">
+    <div class="ico">✅</div>
+    <div>
+      <h2>回収フォームを生成しました（物件3件）</h2>
+      <p>案件名：2026年6月 大阪市内 収益区分3件</p>
+    </div>
+  </div>
+
+  <!-- 送信先（①で選んだエンド業者） -->
+  <div class="card">
+    <div class="section-title">📤 送信先（8社）</div>
+    <div class="pad">
+      <p class="rcp-lead">①で選んだエンド業者です。下の「メール文＋URL」を、各社へお送りください。</p>
+      <div class="rcp-chips">
+        <span class="chip">関西エステート<span class="pic">／田中</span></span>
+        <span class="chip">みらいリアルティ<span class="pic">／鈴木</span></span>
+        <span class="chip">株式会社サンライズ住販<span class="pic">／佐藤</span></span>
+        <span class="chip">なにわ不動産<span class="pic">／高橋</span></span>
+        <span class="chip">グランドエステート<span class="pic">／吉田</span></span>
+        <span class="chip">アーバン投資販売<span class="pic">／渡辺</span></span>
+        <span class="chip">コスモ住宅販売<span class="pic">／伊藤</span></span>
+        <span class="chip">神戸プロパティ<span class="pic">／山本</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- フォームURL -->
+  <div class="card">
+    <div class="section-title"><span class="num">1</span>回収フォームのURL</div>
+    <div class="pad">
+      <div class="url-box">
+        <div class="url" id="url">https://reus-form.example.com/f/RE-2026-0613-ab12cd</div>
+        <button class="copy-btn" id="copyUrl" onclick="copyText('url', this)">URLをコピー</button>
+      </div>
+      <div class="future">💡 このURLを開くと、エンド業者が見る③回収フォームが表示されます（ログイン不要）。</div>
+    </div>
+  </div>
+
+  <!-- メール本文 -->
+  <div class="card">
+    <div class="section-title"><span class="num">2</span>送信用のメール文（自動作成・編集できます）</div>
+    <div class="pad">
+      <div class="mailbox">
+        <textarea class="mail-text" id="mail">いつもお世話になっております。株式会社reusでございます。
+
+下記の収益区分（3件）につきまして、買い付け金額のお伺いをさせていただきます。
+お手数ですが、下記フォームより各物件のご希望金額をご入力ください。
+（メールへのご返信は不要です。ご入力は後から修正も可能です）
+
+▼ 買い付け金額 回収フォーム
+https://reus-form.example.com/f/RE-2026-0613-ab12cd
+
+────────────────────
+・プレサンス谷町九丁目駅前
+・ジオ江坂レジデンス
+・ファステート難波SOUTH
+────────────────────
+
+ご不明点がございましたら、本メールへご返信ください。
+何卒よろしくお願い申し上げます。
+
+株式会社reus　営業部</textarea>
+      </div>
+      <div class="mail-actions">
+        <button class="copy-btn" id="copyMail" onclick="copyText('mail', this)">メール文をコピー</button>
+      </div>
+
+      <div class="how" style="margin-top:16px;">
+        <b>📧 送り方（現在の運用に合わせています）</b>
+        <ol>
+          <li>上の「メール文をコピー」を押す</li>
+          <li>いつものメール（自社ドメイン）で新規メールを作成し、貼り付ける</li>
+          <li>送りたいエンド業者を宛先に入れて送信</li>
+        </ol>
+      </div>
+      <div class="future">🔜 将来の拡張：宛先リストを登録しておけば「ワンボタンで自動送信」も追加できます。</div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <a class="btn-line" href="デモ_1_アップロード.html">⬅ ①アップロードに戻る</a>
+    <a class="btn-gold" href="買い付け金額回収フォーム_デモ.html">エンドが見る③回収フォームを開く ➜</a>
+  </div>
+</main>
+
+<script>
+  // ===== コピー（デモでも実際にコピーできます） =====
+  function copyText(id, btn){
+    var el = document.getElementById(id);
+    var text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+    var done = function(){
+      var original = btn.textContent;
+      btn.textContent = '✓ コピーしました';
+      btn.classList.add('done');
+      setTimeout(function(){ btn.textContent = original; btn.classList.remove('done'); }, 1800);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); });
+    }else{
+      fallback(text); done();
+    }
+  }
+  // クリップボードAPIが使えない環境用の保険
+  function fallback(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+  }
+</script>
+</body>
+</html>
