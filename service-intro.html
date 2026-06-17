@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reus 買い付け金額回収システム ｜ サービス紹介</title>
+
+<!--
+  Reus 買い付け金額回収システム プレゼン資料（SaaS紹介スタイル・1ファイルHTML）
+  デザイン方針：クリーン・モダンSaaS（白背景 × 深ネイビー文字 / インジゴ・ブルーのアクセント / 広い余白・角丸カード）
+  操作：矢印キー（↑↓ / ←→）・スペースでスライド送り。右下のドットでも移動可。
+  作成：2026年6月
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ===== 設定値（色・フォントをここに集約） ===== */
+:root{
+  --bg:        #ffffff;        /* 基本背景（白） */
+  --bg-soft:   #f8fafc;        /* 薄いグレー背景 */
+  --bg-deep:   #0f172a;        /* 濃ネイビー（ダーク面） */
+  --ink:       #0f172a;        /* 本文の濃ネイビー */
+  --ink-2:     #475569;        /* 補助テキスト（中間グレー） */
+  --ink-3:     #94a3b8;        /* さらに薄いテキスト */
+  --line:      #e2e8f0;        /* 細い罫線 */
+  --accent:    #4f46e5;        /* アクセント（インジゴ） */
+  --accent-2:  #2563eb;        /* アクセント（ブルー） */
+  --accent-soft:#eef2ff;       /* アクセントの薄い面 */
+  --grad:      linear-gradient(135deg,#4f46e5 0%,#2563eb 100%);
+  --shadow:    0 1px 2px rgba(15,23,42,.04), 0 12px 32px -12px rgba(15,23,42,.18);
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.16);
+  --radius:    18px;
+  --font:      "Inter","Noto Sans JP",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  color:var(--ink);
+  background:var(--bg);
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:.01em;
+}
+
+/* ===== スクロールスナップでスライド送り ===== */
+.deck{
+  height:100vh;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+}
+.slide{
+  min-height:100vh;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:6vh 8vw;
+  position:relative;
+  border-bottom:1px solid var(--line);
+}
+.slide.dark{background:var(--bg-deep);color:#fff;border-bottom:none}
+.slide.soft{background:var(--bg-soft)}
+
+/* ===== 共通パーツ ===== */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);
+  background:var(--accent-soft);
+  padding:7px 14px;border-radius:999px;
+  margin-bottom:24px;
+}
+.dark .eyebrow{background:rgba(99,102,241,.18);color:#c7d2fe}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+h1{font-size:clamp(2.4rem,5.2vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-.02em}
+h2{font-size:clamp(1.8rem,3.6vw,2.9rem);font-weight:800;line-height:1.18;letter-spacing:-.015em;margin-bottom:14px}
+.lead{font-size:clamp(1.02rem,1.5vw,1.25rem);color:var(--ink-2);max-width:760px}
+.dark .lead{color:#cbd5e1}
+.accent-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.section-head{max-width:820px;margin-bottom:46px}
+
+/* ===== 表紙 ===== */
+#cover{justify-content:center;overflow:hidden}
+#cover .bg-orb{
+  position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;z-index:0;
+}
+#cover .orb1{width:520px;height:520px;background:#c7d2fe;top:-160px;right:-120px}
+#cover .orb2{width:420px;height:420px;background:#bfdbfe;bottom:-160px;left:-100px}
+#cover .inner{position:relative;z-index:1;max-width:1000px}
+#cover .product-tag{
+  display:inline-flex;align-items:center;gap:10px;
+  font-weight:700;font-size:.95rem;color:var(--ink-2);
+  border:1px solid var(--line);background:#fff;
+  padding:8px 16px;border-radius:999px;margin-bottom:30px;box-shadow:var(--shadow-sm);
+}
+#cover .logo-mark{width:22px;height:22px;border-radius:6px;background:var(--grad);display:inline-block}
+#cover h1{margin-bottom:22px}
+#cover .sub{font-size:clamp(1.05rem,1.8vw,1.45rem);color:var(--ink-2);max-width:680px;margin-bottom:40px}
+#cover .meta{display:flex;gap:30px;flex-wrap:wrap;color:var(--ink-3);font-size:.9rem;font-weight:500}
+#cover .meta b{color:var(--ink);font-weight:700}
+
+/* ===== カードグリッド ===== */
+.grid{display:grid;gap:22px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:30px;box-shadow:var(--shadow-sm);
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card .ic{
+  width:48px;height:48px;border-radius:12px;background:var(--accent-soft);
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+}
+.card .ic svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:1.18rem;font-weight:700;margin-bottom:8px}
+.card p{font-size:.95rem;color:var(--ink-2)}
+.card .num{font-size:.8rem;font-weight:700;color:var(--accent);letter-spacing:.1em;margin-bottom:14px}
+
+/* ===== 課題（before）リスト ===== */
+.pain-list{display:flex;flex-direction:column;gap:16px;max-width:840px}
+.pain{
+  display:flex;gap:18px;align-items:flex-start;
+  background:#fff;border:1px solid var(--line);border-left:4px solid #f43f5e;
+  border-radius:14px;padding:20px 24px;box-shadow:var(--shadow-sm);
+}
+.pain .pic{flex:none;width:38px;height:38px;border-radius:10px;background:#fef2f2;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.pain h3{font-size:1.05rem;font-weight:700;margin-bottom:3px}
+.pain p{font-size:.92rem;color:var(--ink-2)}
+
+/* ===== フロー（横ステップ） ===== */
+.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;counter-reset:step}
+.step{
+  flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:24px 20px;position:relative;box-shadow:var(--shadow-sm);
+}
+.step + .step{margin-left:14px}
+.step .badge{
+  width:34px;height:34px;border-radius:10px;background:var(--grad);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;margin-bottom:14px;
+}
+.step h3{font-size:1rem;font-weight:700;margin-bottom:6px}
+.step p{font-size:.85rem;color:var(--ink-2)}
+.step .arrow{position:absolute;right:-21px;top:50%;transform:translateY(-50%);z-index:2;color:var(--accent);font-size:1.4rem;font-weight:700}
+@media(max-width:900px){.step .arrow{display:none}.step+.step{margin-left:0;margin-top:14px}.flow{flex-direction:column}}
+
+/* ===== メール自動送付の仕組み（縦ステップ） ===== */
+.mail-steps{display:flex;flex-direction:column;gap:0;max-width:900px}
+.mstep{display:flex;gap:22px;padding-bottom:28px;position:relative}
+.mstep:not(:last-child)::before{content:"";position:absolute;left:23px;top:48px;bottom:0;width:2px;background:var(--line)}
+.mstep .mnum{flex:none;width:48px;height:48px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;z-index:1}
+.mstep .mbody h3{font-size:1.15rem;font-weight:700;margin-bottom:5px}
+.mstep .mbody p{font-size:.96rem;color:var(--ink-2)}
+.mstep .mbody .tag{display:inline-block;font-size:.78rem;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 10px;border-radius:999px;margin-top:8px;margin-right:6px}
+
+/* ===== Before / After ===== */
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:30px;align-items:center;max-width:980px}
+.ba-col{border-radius:var(--radius);padding:32px;border:1px solid var(--line)}
+.ba-before{background:#fff}
+.ba-after{background:var(--bg-deep);color:#fff;border:none;box-shadow:var(--shadow)}
+.ba-col .lbl{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px;display:inline-block;padding:5px 12px;border-radius:999px}
+.ba-before .lbl{color:#64748b;background:var(--bg-soft)}
+.ba-after .lbl{color:#c7d2fe;background:rgba(99,102,241,.2)}
+.ba-col ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+.ba-col li{display:flex;gap:11px;align-items:flex-start;font-size:.98rem}
+.ba-before li{color:var(--ink-2)}
+.ba-col li .mk{flex:none;font-weight:800}
+.ba-before li .mk{color:#f43f5e}
+.ba-after li .mk{color:#34d399}
+.ba-arrow{font-size:2rem;color:var(--accent);font-weight:800}
+@media(max-width:900px){.ba{grid-template-columns:1fr}.ba-arrow{transform:rotate(90deg);justify-self:center}}
+
+/* ===== ロードマップ ===== */
+.road{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.phase{border-radius:var(--radius);padding:28px;border:1px solid var(--line);background:#fff;position:relative;overflow:hidden}
+.phase .ptop{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.phase .pchip{font-size:.74rem;font-weight:700;letter-spacing:.08em;padding:4px 11px;border-radius:999px}
+.phase.done .pchip{background:#dcfce7;color:#15803d}
+.phase.now .pchip{background:var(--accent-soft);color:var(--accent)}
+.phase.next .pchip{background:#f1f5f9;color:#64748b}
+.phase.now{border:2px solid var(--accent);box-shadow:var(--shadow)}
+.phase h3{font-size:1.12rem;font-weight:700;margin-bottom:12px}
+.phase ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.phase li{font-size:.9rem;color:var(--ink-2);display:flex;gap:9px;align-items:flex-start}
+.phase li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:9px}
+@media(max-width:900px){.road{grid-template-columns:1fr}}
+
+/* ===== 数値ハイライト ===== */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:900px}
+.stat{text-align:center;padding:26px;border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);background:rgba(255,255,255,.04)}
+.stat .big{font-size:clamp(2rem,4vw,3rem);font-weight:800;background:linear-gradient(135deg,#a5b4fc,#93c5fd);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.stat .cap{font-size:.9rem;color:#cbd5e1;margin-top:10px}
+
+/* ===== クロージング ===== */
+#close{justify-content:center;text-align:center}
+#close .inner{max-width:820px;margin:0 auto}
+#close h2{font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:20px}
+#close .lead{margin:0 auto 36px;color:#cbd5e1}
+#close .cta{display:inline-flex;align-items:center;gap:10px;background:var(--grad);color:#fff;font-weight:700;padding:15px 30px;border-radius:999px;font-size:1.02rem;box-shadow:0 12px 30px -8px rgba(79,70,229,.6)}
+
+/* ===== ナビゲーション（ドット） ===== */
+.nav-dots{position:fixed;right:26px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:12px}
+.nav-dots a{width:10px;height:10px;border-radius:50%;background:#cbd5e1;display:block;transition:all .2s;border:none;cursor:pointer}
+.nav-dots a:hover{background:var(--accent-2);transform:scale(1.2)}
+.nav-dots a.active{background:var(--accent);height:24px;border-radius:6px}
+@media(max-width:760px){.nav-dots{display:none}}
+
+/* ===== 進捗バー ===== */
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--grad);z-index:60;width:0;transition:width .15s ease}
+
+/* ===== ページ番号 ===== */
+.pageno{position:fixed;left:26px;bottom:22px;z-index:50;font-size:.82rem;font-weight:600;color:var(--ink-3)}
+.dark-active .pageno{color:rgba(255,255,255,.6)}
+
+/* ===== 操作ヒント ===== */
+.hint{position:fixed;right:26px;bottom:22px;z-index:50;font-size:.78rem;color:var(--ink-3);display:flex;align-items:center;gap:7px}
+.hint kbd{font-family:var(--font);font-size:.72rem;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px 7px;box-shadow:var(--shadow-sm);color:var(--ink-2)}
+@media(max-width:760px){.hint{display:none}}
+
+@media print{
+  .deck{height:auto;overflow:visible}
+  .slide{min-height:auto;page-break-after:always;border:none}
+  .nav-dots,.progress,.pageno,.hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="nav-dots" id="navDots"></div>
+<div class="pageno"><span id="cur">01</span> / <span id="total">11</span></div>
+<div class="hint"><kbd>↓</kbd><kbd>↑</kbd> または <kbd>Space</kbd> でスライド送り</div>
+
+<div class="deck" id="deck">
+
+  <!-- 01 表紙 -->
+  <section class="slide" id="cover" data-title="表紙">
+    <div class="bg-orb orb1"></div>
+    <div class="bg-orb orb2"></div>
+    <div class="inner">
+      <div class="product-tag"><span class="logo-mark"></span>Reus ｜ 不動産買い付けDX</div>
+      <h1>マイソクを送って、<br><span class="accent-text">買い付け金額が自動で集まる。</span></h1>
+      <p class="sub">エンド業者へのメール送付から金額の回収・ランキング集計までを一気通貫で自動化する、Reus専用の業務システムです。</p>
+      <div class="meta">
+        <span><b>買い付け金額 回収システム</b></span>
+        <span>サービス紹介資料</span>
+        <span>2026年6月</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 課題 -->
+  <section class="slide soft" data-title="課題">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>The Problem</span>
+      <h2>「メールで送って、返信を待つ」が<br>とにかく手間だった。</h2>
+      <p class="lead">不動産の買い付けは、いまだにメールでのやり取りが主流。1社ずつ送って金額を待つ作業が、回収率を下げる原因になっていました。</p>
+    </div>
+    <div class="pain-list">
+      <div class="pain">
+        <div class="pic">📨</div>
+        <div><h3>送る作業が重い</h3><p>マイソク（PDF）を何十社ものエンド業者へ、1社ずつメールで送付。宛先も文面も毎回手作業。</p></div>
+      </div>
+      <div class="pain">
+        <div class="pic">⌛</div>
+        <div><h3>返信を待ち続ける</h3><p>「PDFを開く → 金額をメールに打ち込んで返信」はエンド側も面倒。結果、返信率（金額提示率）が下がる。</p></div>
+      </div>
+      <div class="pain">
+        <div class="pic">🗂️</div>
+        <div><h3>集計がバラバラ</h3><p>返ってきた金額をスプレッドシートへ手で転記。物件ごとの比較や順位づけにも手間がかかる。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 ソリューション -->
+  <section class="slide dark" data-title="解決策">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>The Solution</span>
+      <h2>送付も、回収も、集計も。<br><span class="accent-text">ぜんぶ1つのシステムで。</span></h2>
+      <p class="lead">マイソクをアップロードするだけ。物件情報の読み取り・回収フォームの生成・メール送付・金額ランキングまで自動でつながります。</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="big">PDF→自動</div><div class="cap">マイソクから物件情報を自動抽出（手入力ゼロ）</div></div>
+      <div class="stat"><div class="big">URLで回答</div><div class="cap">業者はタップして金額を入れるだけ・ログイン不要</div></div>
+      <div class="stat"><div class="big">自動集計</div><div class="cap">物件ごとに買い付け金額を高い順でランキング</div></div>
+    </div>
+  </section>
+
+  <!-- 04 主要機能 -->
+  <section class="slide" data-title="主要機能">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>Features</span>
+      <h2>4つのコア機能</h2>
+      <p class="lead">アップロードから回収状況の見える化まで。Reusの業務フローに沿った機能を1つにまとめています。</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M12 11v6"/><path d="m9 14 3-3 3 3"/></svg></div>
+        <div class="num">01</div>
+        <h3>マイソク自動読み取り</h3>
+        <p>PDFをアップすると、物件名・所在地・面積・家賃・管理費などを自動で抽出。手入力が不要に。</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10"/><path d="M7 13h6"/><path d="M14 17h3"/></svg></div>
+        <div class="num">02</div>
+        <h3>回収フォーム自動生成</h3>
+        <p>物件情報つきの「買い付け金額 回収フォーム」を自動作成。専用URLを発行して業者へ。</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 7-10 6L2 7"/></svg></div>
+        <div class="num">03</div>
+        <h3>メール送付の自動化</h3>
+        <p>業者リストから宛先を選ぶだけ。文面とPDF添付がセットされ、まとめて送付できる（自動化フェーズ）。</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg></div>
+        <div class="num">04</div>
+        <h3>回収状況の見える化</h3>
+        <p>集まった金額を物件ごとに高い順でランキング表示。誰がいくら提示したかが一目でわかる。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 使い方フロー -->
+  <section class="slide soft" data-title="使い方">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>How it works</span>
+      <h2>使い方は、5ステップ。</h2>
+      <p class="lead">アップロードから回収状況の確認まで、迷わず進める流れになっています。</p>
+    </div>
+    <div class="flow">
+      <div class="step"><div class="badge">1</div><h3>アップロード</h3><p>マイソクPDFをドラッグ&ドロップ。複数まとめてOK。</p><span class="arrow">→</span></div>
+      <div class="step"><div class="badge">2</div><h3>確認・修正</h3><p>自動抽出された項目をその場で確認・手直し。</p><span class="arrow">→</span></div>
+      <div class="step"><div class="badge">3</div><h3>確定・送付</h3><p>回収フォームURL＋メール文面＋PDFが完成。業者へ送付。</p><span class="arrow">→</span></div>
+      <div class="step"><div class="badge">4</div><h3>業者が回答</h3><p>業者はURLをタップして金額を入力するだけ。</p><span class="arrow">→</span></div>
+      <div class="step"><div class="badge">5</div><h3>回収状況を確認</h3><p>物件ごとに金額ランキングで集計を確認。</p></div>
+    </div>
+  </section>
+
+  <!-- 06 メール自動送付の仕組み -->
+  <section class="slide" data-title="メール自動送付">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>Deep Dive ｜ Email Automation</span>
+      <h2>メール自動送付の仕組み</h2>
+      <p class="lead">「文面・PDF・URLはシステムが用意し、最後の送信だけ人がやる」現状から、<b>宛先選択 → 自動セット → 一斉送付</b>まで自動化します。</p>
+    </div>
+    <div class="mail-steps">
+      <div class="mstep"><div class="mnum">1</div><div class="mbody"><h3>業者リストから宛先を選ぶ</h3><p>会社名・担当者・メールアドレスを管理するスプレッドシートと連携。一覧やグループからワンクリックで選択でき、メールアドレスまで自動で埋まります。</p><span class="tag">宛先の自動セット</span><span class="tag">グループ一括選択</span></div></div>
+      <div class="mstep"><div class="mnum">2</div><div class="mbody"><h3>メール文面を自動生成</h3><p>会社名・担当者名・物件名・回答期限・フォームURLを差し込み、宛先ごとの文面が自動で完成します。</p><span class="tag">差し込み自動</span></div></div>
+      <div class="mstep"><div class="mnum">3</div><div class="mbody"><h3>PDFを1枚ずつ自動添付</h3><p>業界通例どおりマイソク（PDF）を添付。スマホで開けるよう、ZIPにせず「物件名.pdf」で1枚ずつ添付します。</p><span class="tag">スマホ対応</span><span class="tag">物件名.pdf</span></div></div>
+      <div class="mstep"><div class="mnum">4</div><div class="mbody"><h3>ワンボタンで一斉送付</h3><p>選んだ全業者へ、宛先・文面・PDFをセットして自動送信。送信手段（自社メール／配信サービス）は設定で切り替えられる設計です。</p><span class="tag">送信元は切替可能</span></div></div>
+    </div>
+  </section>
+
+  <!-- 07 回収状況の見える化 -->
+  <section class="slide soft" data-title="回収状況">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>Insights</span>
+      <h2>金額は、物件ごとに自動でランキング。</h2>
+      <p class="lead">集まった買い付け金額を物件単位でまとめ、高い順に並べて表示。再回答は最新で上書き。比較も意思決定もスピードアップします。</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card"><div class="num">物件ごと</div><h3>業者横断ランキング</h3><p>同じ物件に対する全業者の提示額を高い順に表示。1番手・2番手がすぐわかる。</p></div>
+      <div class="card"><div class="num">担当者ごと</div><h3>案件一覧</h3><p>担当者・案件ごとの回答状況や件数を一覧で把握。</p></div>
+      <div class="card"><div class="num">案件詳細</div><h3>回答履歴</h3><p>金額の時系列・見送りなど、案件ごとの動きを詳しく確認。</p></div>
+    </div>
+  </section>
+
+  <!-- 08 Before / After -->
+  <section class="slide" data-title="導入効果">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>Impact</span>
+      <h2>導入で、何が変わる？</h2>
+    </div>
+    <div class="ba">
+      <div class="ba-col ba-before">
+        <span class="lbl">Before ｜ いままで</span>
+        <ul>
+          <li><span class="mk">✕</span>1社ずつメールを作って送付</li>
+          <li><span class="mk">✕</span>宛先・文面・PDFを毎回手作業</li>
+          <li><span class="mk">✕</span>返信が来るまで進捗が見えない</li>
+          <li><span class="mk">✕</span>金額をシートへ手で転記・集計</li>
+        </ul>
+      </div>
+      <div class="ba-arrow">→</div>
+      <div class="ba-col ba-after">
+        <span class="lbl">After ｜ システム導入後</span>
+        <ul>
+          <li><span class="mk">✓</span>宛先を選んでワンボタンで一斉送付</li>
+          <li><span class="mk">✓</span>文面・PDF・URLは自動でセット</li>
+          <li><span class="mk">✓</span>回答はリアルタイムで集約</li>
+          <li><span class="mk">✓</span>物件ごとに自動でランキング表示</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 ロードマップ -->
+  <section class="slide soft" data-title="ロードマップ">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>Roadmap</span>
+      <h2>開発ロードマップ</h2>
+      <p class="lead">中核機能はすでに動作中。本番運用・自動送付へと段階的に進めます。</p>
+    </div>
+    <div class="road">
+      <div class="phase done">
+        <div class="ptop"><span class="pchip">✓ 完成・動作中</span></div>
+        <h3>第1段階：中核機能</h3>
+        <ul>
+          <li>マイソク自動読み取り</li>
+          <li>確認・修正フロー</li>
+          <li>回収フォーム自動生成</li>
+          <li>金額の回収・ランキング集計</li>
+        </ul>
+      </div>
+      <div class="phase now">
+        <div class="ptop"><span class="pchip">▶ 次のステップ</span></div>
+        <h3>第2段階：本番運用</h3>
+        <ul>
+          <li>データ保管を本格仕様へ</li>
+          <li>常時稼働サーバーで公開</li>
+          <li>専用URL・通信の暗号化（HTTPS）</li>
+          <li>いつ業者が回答してもOKに</li>
+        </ul>
+      </div>
+      <div class="phase next">
+        <div class="ptop"><span class="pchip">◷ 自動化フェーズ</span></div>
+        <h3>第3段階：送付の自動化</h3>
+        <ul>
+          <li>業者リスト連携で宛先自動セット</li>
+          <li>メール自動送信＋PDF自動添付</li>
+          <li>回答集約スプレッドシート連携</li>
+          <li>保存期間の運用ルール整備</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 安心ポイント -->
+  <section class="slide" data-title="安心ポイント">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span>Why Reus system</span>
+      <h2>安心して使える設計</h2>
+    </div>
+    <div class="grid grid-3">
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>情報を外に出さない</h3><p>物件情報の読み取りは社内（ローカル）で完結。外部サービスに物件・個人情報を送りません。</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>業者の手間を最小化</h3><p>ログイン不要・返信不要。URLをタップして金額を入れるだけ。だから回答率が上がる。</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></div><h3>運用に合わせて拡張</h3><p>送信元やデータ連携先は設定で切り替え。社内環境が決まってから柔軟に対応できます。</p></div>
+    </div>
+  </section>
+
+  <!-- 11 クロージング -->
+  <section class="slide dark" id="close" data-title="まとめ">
+    <div class="inner">
+      <span class="eyebrow" style="margin-left:auto;margin-right:auto"><span class="dot"></span>Reus 買い付け金額 回収システム</span>
+      <h2>送って、待つだけの仕事を、<br><span class="accent-text">仕組みに変える。</span></h2>
+      <p class="lead">マイソクのアップロードから金額の回収・集計まで。Reusの買い付け業務を、まるごと効率化します。</p>
+      <span class="cta">実際の操作デモは、当日担当者よりご覧いただきます →</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ===== スライドの操作（キーボード・ドット・進捗） =====
+const deck = document.getElementById('deck');
+const slides = Array.from(document.querySelectorAll('.slide'));
+const navDots = document.getElementById('navDots');
+const progress = document.getElementById('progress');
+const curEl = document.getElementById('cur');
+const totalEl = document.getElementById('total');
+totalEl.textContent = String(slides.length).padStart(2,'0');
+
+// ドットナビを生成
+slides.forEach((s, i) => {
+  const a = document.createElement('button');
+  a.title = s.dataset.title || ('スライド'+(i+1));
+  a.addEventListener('click', () => slides[i].scrollIntoView({behavior:'smooth'}));
+  navDots.appendChild(a);
+});
+const dots = Array.from(navDots.children);
+
+// 現在のスライドを判定して表示を更新
+let current = 0;
+function updateActive(){
+  const idx = Math.round(deck.scrollTop / window.innerHeight);
+  current = Math.max(0, Math.min(slides.length-1, idx));
+  dots.forEach((d,i)=>d.classList.toggle('active', i===current));
+  curEl.textContent = String(current+1).padStart(2,'0');
+  // 進捗バー
+  const max = deck.scrollHeight - deck.clientHeight;
+  progress.style.width = (max>0 ? (deck.scrollTop/max*100) : 0) + '%';
+  // ダーク面ではページ番号を白っぽく
+  document.body.classList.toggle('dark-active', slides[current].classList.contains('dark'));
+}
+deck.addEventListener('scroll', updateActive, {passive:true});
+window.addEventListener('resize', updateActive);
+updateActive();
+
+// キーボード操作
+function go(dir){
+  const next = Math.max(0, Math.min(slides.length-1, current+dir));
+  slides[next].scrollIntoView({behavior:'smooth'});
+}
+window.addEventListener('keydown', (e)=>{
+  if(['ArrowDown','ArrowRight','PageDown'].includes(e.key)){ e.preventDefault(); go(1); }
+  else if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); go(-1); }
+  else if(e.key===' '){ e.preventDefault(); go(e.shiftKey?-1:1); }
+  else if(e.key==='Home'){ e.preventDefault(); slides[0].scrollIntoView({behavior:'smooth'}); }
+  else if(e.key==='End'){ e.preventDefault(); slides[slides.length-1].scrollIntoView({behavior:'smooth'}); }
+});
+</script>
+</body>
+</html>
